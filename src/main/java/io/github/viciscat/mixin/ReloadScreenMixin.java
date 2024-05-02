@@ -34,9 +34,9 @@ public abstract class ReloadScreenMixin extends Screen {
     @Shadow(remap = false) @Final private Screen parent;
 
     @Shadow(remap = false) private float progress;
-//    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_RED;
-//    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_GREEN;
-//    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_BLUE;
+    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_RED;
+    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_GREEN;
+    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_BLUE;
     @Shadow @Final private static int BACKGROUND_COLOR_EXCEPTION_RED;
     @Shadow @Final private static int BACKGROUND_COLOR_EXCEPTION_GREEN;
     @Shadow @Final private static int BACKGROUND_COLOR_EXCEPTION_BLUE;
@@ -81,7 +81,7 @@ public abstract class ReloadScreenMixin extends Screen {
         val color_white = (int) (0xFF) << 24 | (0xFFFFFF);
         val color_mojang_red = (int) (0xFF) << 24 | (0xDD4F3B);
         val color_mojang_orange = (int) (0xFF) << 24 | (0xF6883E);
-        //val color_stationapi_default = (int) (0xFF) << 24 | (BACKGROUND_COLOR_DEFAULT_RED << 16) | (BACKGROUND_COLOR_DEFAULT_GREEN << 8)  | BACKGROUND_COLOR_DEFAULT_BLUE;
+        val color_stationapi_default = (int) (0xFF) << 24 | (BACKGROUND_COLOR_DEFAULT_RED << 16) | (BACKGROUND_COLOR_DEFAULT_GREEN << 8)  | BACKGROUND_COLOR_DEFAULT_BLUE;
         val color_stationapi_exception = (int) (0xFF) << 24 | (BACKGROUND_COLOR_EXCEPTION_RED << 16) | (BACKGROUND_COLOR_EXCEPTION_GREEN << 8)  | BACKGROUND_COLOR_EXCEPTION_BLUE;
 
         if (exceptionThrown) {
@@ -97,6 +97,44 @@ public abstract class ReloadScreenMixin extends Screen {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             tessellator.startQuads();
             tessellator.color(color_black);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 - 20, 0, 0, 0);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 + 20, 0, 0, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 + 20, 0, 1, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 - 20, 0, 1, 0);
+            tessellator.draw();
+            glDisable(GL_BLEND);
+        } else if (logo.equals("_dimando")) {
+            fill(0, 0, width, height, color_white);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 40), color_stationapi_default);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 50), color_stationapi_default);
+            drawVerticalLine(40, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_stationapi_default);
+            drawVerticalLine(width - 40 - 1, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_stationapi_default);
+            fill(43, (int) ((height / 2) + 43), ceil((width - (43) * 2) * progress + 43), (int) ((height / 2) + 50 - 2), color_mojang_orange);
+
+            minecraft.textureManager.bindTexture(minecraft.textureManager.getTextureId(logo));
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            tessellator.startQuads();
+            tessellator.color(color_stationapi_default);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 - 20, 0, 0, 0);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 + 20, 0, 0, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 + 20, 0, 1, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 - 20, 0, 1, 0);
+            tessellator.draw();
+            glDisable(GL_BLEND);
+        } else if (logo.equals("_old")) {
+            fill(0, 0, width, height, color_white);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 40), color_mojang_orange);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 50), color_mojang_orange);
+            drawVerticalLine(40, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_mojang_orange);
+            drawVerticalLine(width - 40 - 1, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_mojang_orange);
+            fill(43, (int) ((height / 2) + 43), ceil((width - (43) * 2) * progress + 43), (int) ((height / 2) + 50 - 2), color_mojang_red);
+
+            minecraft.textureManager.bindTexture(minecraft.textureManager.getTextureId(logo));
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            tessellator.startQuads();
+            tessellator.color(color_mojang_orange);
             tessellator.vertex(width / 2D - 120, (height - 50D) / 2 - 20, 0, 0, 0);
             tessellator.vertex(width / 2D - 120, (height - 50D) / 2 + 20, 0, 0, 1);
             tessellator.vertex(width / 2D + 120, (height - 50D) / 2 + 20, 0, 1, 1);
