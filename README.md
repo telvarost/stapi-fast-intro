@@ -1,4 +1,4 @@
-# Remove stupid Station API intro
+# Simplify Station API intro
 
 Does what is says on the tin.
 
