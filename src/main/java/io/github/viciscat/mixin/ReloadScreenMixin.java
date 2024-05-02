@@ -3,9 +3,10 @@ package io.github.viciscat.mixin;
 import com.google.common.primitives.Floats;
 import cyclops.control.Option;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.Tessellator;
 import net.modificationstation.stationapi.api.client.resource.ReloadScreenManager;
 import net.modificationstation.stationapi.api.resource.ResourceReload;
-import org.lwjgl.opengl.GL11;
+import lombok.val;
 import org.spongepowered.asm.mixin.*;
 
 import java.awt.*;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 
 import static net.modificationstation.stationapi.api.StationAPI.LOGGER;
+import static net.modificationstation.stationapi.api.util.math.MathHelper.ceil;
+import static org.lwjgl.opengl.GL11.*;
 
 @Mixin(targets = "net.modificationstation.stationapi.api.client.resource.ReloadScreen")
 public abstract class ReloadScreenMixin extends Screen {
@@ -31,6 +34,14 @@ public abstract class ReloadScreenMixin extends Screen {
     @Shadow(remap = false) @Final private Screen parent;
 
     @Shadow(remap = false) private float progress;
+//    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_RED;
+//    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_GREEN;
+//    @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_BLUE;
+    @Shadow @Final private static int BACKGROUND_COLOR_EXCEPTION_RED;
+    @Shadow @Final private static int BACKGROUND_COLOR_EXCEPTION_GREEN;
+    @Shadow @Final private static int BACKGROUND_COLOR_EXCEPTION_BLUE;
+    @Shadow @Final private Tessellator tessellator;
+    @Shadow @Final private String logo;
     @Unique
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
@@ -66,19 +77,58 @@ public abstract class ReloadScreenMixin extends Screen {
 
     @Unique
     private void renderEarly() {
-        GL11.glBindTexture(3553, minecraft.textureManager.getTextureId("/title/mojang.png"));
-        fill(0, 0, width, height, 0xFFFFFFFF);
-        minecraft.method_2109((width-256)/2, (height-256)/2, 0, 0, 256, 256);
-        GL11.glEnable(GL11.GL_BLEND);
-        renderText(Color.BLACK, false);
-        GL11.glDisable(GL11.GL_BLEND);
+        val color_black = (int) (0xFF) << 24 | (0x000000);
+        val color_white = (int) (0xFF) << 24 | (0xFFFFFF);
+        val color_mojang_red = (int) (0xFF) << 24 | (0xDD4F3B);
+        val color_mojang_orange = (int) (0xFF) << 24 | (0xF6883E);
+        //val color_stationapi_default = (int) (0xFF) << 24 | (BACKGROUND_COLOR_DEFAULT_RED << 16) | (BACKGROUND_COLOR_DEFAULT_GREEN << 8)  | BACKGROUND_COLOR_DEFAULT_BLUE;
+        val color_stationapi_exception = (int) (0xFF) << 24 | (BACKGROUND_COLOR_EXCEPTION_RED << 16) | (BACKGROUND_COLOR_EXCEPTION_GREEN << 8)  | BACKGROUND_COLOR_EXCEPTION_BLUE;
+
+        if (exceptionThrown) {
+            fill(0, 0, width, height, color_stationapi_exception);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 40), color_black);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 50), color_black);
+            drawVerticalLine(40, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_black);
+            drawVerticalLine(width - 40 - 1, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_black);
+            fill(43, (int) ((height / 2) + 43), ceil((width - (43) * 2) * progress + 43), (int) ((height / 2) + 50 - 2), color_black);
+
+            minecraft.textureManager.bindTexture(minecraft.textureManager.getTextureId(logo));
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            tessellator.startQuads();
+            tessellator.color(color_black);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 - 20, 0, 0, 0);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 + 20, 0, 0, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 + 20, 0, 1, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 - 20, 0, 1, 0);
+            tessellator.draw();
+            glDisable(GL_BLEND);
+        } else {
+            fill(0, 0, width, height, color_white);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 40), color_mojang_red);
+            drawHorizontalLine(40, width - 40 - 1, (int) ((height / 2) + 50), color_mojang_red);
+            drawVerticalLine(40, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_mojang_red);
+            drawVerticalLine(width - 40 - 1, (int) ((height / 2) + 50), (int) ((height / 2) + 40), color_mojang_red);
+            fill(43, (int) ((height / 2) + 43), ceil((width - (43) * 2) * progress + 43), (int) ((height / 2) + 50 - 2), color_mojang_orange);
+
+            minecraft.textureManager.bindTexture(minecraft.textureManager.getTextureId(logo));
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            tessellator.startQuads();
+            tessellator.color(color_mojang_red);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 - 20, 0, 0, 0);
+            tessellator.vertex(width / 2D - 120, (height - 50D) / 2 + 20, 0, 0, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 + 20, 0, 1, 1);
+            tessellator.vertex(width / 2D + 120, (height - 50D) / 2 - 20, 0, 1, 0);
+            tessellator.draw();
+            glDisable(GL_BLEND);
+        }
     }
 
     @Unique
     private void renderNormal(float delta) {
         parent.render(-1, -1, delta);
         this.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
-
         renderText(Color.WHITE, true);
     }
 

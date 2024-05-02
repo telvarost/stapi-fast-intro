@@ -3,10 +3,11 @@
   "id": "stapi-fast-intro",
   "version": "${version}",
 
-  "name": "StAPI No Annoying Intro",
-  "description": "Removes the LONG ASS INTRO that shows up when you launch the game or reload a texture pack",
+  "name": "Fast StationAPI Intro",
+  "description": "Replaces the StationAPI intro that shows up when you launch the game or reload a texture pack with faster variants",
   "authors": [
-    "Vic is a Cat"
+    "Vic is a Cat",
+    "Telvarost"
   ],
   "contact": {
     "homepage": "https://github.com/viciscat/stapi-fast-intro",
@@ -25,5 +26,9 @@
   "depends": {
     "minecraft": "1.0.0-beta.7.3",
     "stationapi": ">=2.0-alpha.1.1"
+  },
+
+  "custom": {
+    "modmenu:clientsideOnly": true
   }
 }
