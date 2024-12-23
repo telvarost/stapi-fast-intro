@@ -1,7 +1,6 @@
 package io.github.viciscat.mixin;
 
 import com.google.common.primitives.Floats;
-import cyclops.control.Option;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.Tessellator;
 import net.modificationstation.stationapi.api.client.resource.ReloadScreenManager;
@@ -12,6 +11,7 @@ import org.spongepowered.asm.mixin.*;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 import static net.modificationstation.stationapi.api.StationAPI.LOGGER;
@@ -34,6 +34,7 @@ public abstract class ReloadScreenMixin extends Screen {
     @Shadow(remap = false) @Final private Screen parent;
 
     @Shadow(remap = false) private float progress;
+    
     @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_RED;
     @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_GREEN;
     @Shadow @Final private static int BACKGROUND_COLOR_DEFAULT_BLUE;
@@ -42,6 +43,7 @@ public abstract class ReloadScreenMixin extends Screen {
     @Shadow @Final private static int BACKGROUND_COLOR_EXCEPTION_BLUE;
     @Shadow @Final private Tessellator tessellator;
     @Shadow @Final private String logo;
+
     @Unique
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
@@ -56,12 +58,12 @@ public abstract class ReloadScreenMixin extends Screen {
         if (parent == null) renderEarly();
         else renderNormal(delta);
 
-        Option<ResourceReload> reload;
+        Optional<ResourceReload> reload;
         progress = Floats.constrainToRange(progress * .95F + (isReloadStarted() && (reload = ReloadScreenManager.getCurrentReload()).isPresent() ? reload.orElse(null).getProgress() : 0) * .05F, 0, 1);
         if (Float.isNaN(progress)) progress = 0;
         if (!exceptionThrown && !finished && ReloadScreenManager.isReloadComplete()) {
             try {
-                ReloadScreenManager.getCurrentReload().peek(ResourceReload::throwException);
+                ReloadScreenManager.getCurrentReload().stream().peek(ResourceReload::throwException);
                 finished = true;
             } catch (CompletionException e) {
                 exceptionThrown = true;
@@ -161,6 +163,21 @@ public abstract class ReloadScreenMixin extends Screen {
             tessellator.draw();
             glDisable(GL_BLEND);
         }
+    }
+
+    /**
+     * See {@link net.minecraft.client.Minecraft#method_2109(int, int, int, int, int, int)}
+     */
+    @Unique
+    private void drawMojangLogoQuad(int i, int j) {
+        float f = 0.00390625f;
+        float f2 = 0.00390625f;
+        tessellator.startQuads();
+        tessellator.vertex(i, j + 256, 0.0, 0, 256 * f2);
+        tessellator.vertex(i + 256, j + 256, 0.0, 256 * f, 256 * f2);
+        tessellator.vertex(i + 256, j, 0.0, 256 * f, 0);
+        tessellator.vertex(i, j, 0.0, 0, 0);
+        tessellator.draw();
     }
 
     @Unique
