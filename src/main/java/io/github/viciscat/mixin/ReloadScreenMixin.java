@@ -1,7 +1,6 @@
 package io.github.viciscat.mixin;
 
 import com.google.common.primitives.Floats;
-import cyclops.control.Option;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.Tessellator;
 import net.modificationstation.stationapi.api.client.resource.ReloadScreenManager;
@@ -12,6 +11,7 @@ import org.spongepowered.asm.mixin.*;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 import static net.modificationstation.stationapi.api.StationAPI.LOGGER;
@@ -47,12 +47,12 @@ public abstract class ReloadScreenMixin extends Screen {
         if (parent == null) renderEarly();
         else renderNormal(delta);
 
-        Option<ResourceReload> reload;
+        Optional<ResourceReload> reload;
         progress = Floats.constrainToRange(progress * .95F + (isReloadStarted() && (reload = ReloadScreenManager.getCurrentReload()).isPresent() ? reload.orElse(null).getProgress() : 0) * .05F, 0, 1);
         if (Float.isNaN(progress)) progress = 0;
         if (!exceptionThrown && !finished && ReloadScreenManager.isReloadComplete()) {
             try {
-                ReloadScreenManager.getCurrentReload().peek(ResourceReload::throwException);
+                ReloadScreenManager.getCurrentReload().stream().peek(ResourceReload::throwException);
                 finished = true;
             } catch (CompletionException e) {
                 exceptionThrown = true;
